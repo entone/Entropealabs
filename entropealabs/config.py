@@ -13,7 +13,7 @@ HASH_SALT_SIZE = 32
 ES_INDEX = "app"
 ES_HOSTS = [{"host":"es", "port":9200},]
 
-AUTH_SUBDOMAIN = "auth"
+ADMIN_SUBDOMAIN = "admin"
 
 SECRET_KEY = "!!zer0K00L!!"
 SERVER_NAME = os.getenv("SERVER_NAME", "app.dev")

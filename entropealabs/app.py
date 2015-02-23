@@ -70,9 +70,11 @@ class App(Flask):
         from controllers.auth.facebook import facebook
         from controllers.auth.google import google
         from controllers.healthcheck import hc
+        from controllers.homepage import homepage
         dashboard.before_request(self.user_logged_in)
         self.register_blueprint(dashboard)
         self.register_blueprint(auth)
         self.register_blueprint(facebook)
         self.register_blueprint(google)
         self.register_blueprint(hc)
+        self.register_blueprint(homepage)

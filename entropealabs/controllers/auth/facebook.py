@@ -14,6 +14,7 @@ facebook = Blueprint(
     "facebook",
     __name__,
     template_folder=config.TEMPLATES,
+    subdomain=config.ADMIN_SUBDOMAIN,
     url_prefix="/auth/facebook",
 )
 
