@@ -1,6 +1,6 @@
 from flask import Blueprint, Response, render_template
 from flask.views import MethodView
-from flaskaws import config
+from entropealabs import config
 import logging
 
 dashboard = Blueprint(

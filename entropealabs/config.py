@@ -38,10 +38,14 @@ LOGGER_NAME = "app"
 JSON_AS_ASCII = False
 
 
-TEMPLATES = "{}/flaskaws/views/templates".format(os.getcwd())
+TEMPLATES = "{}/entropealabs/views/templates".format(os.getcwd())
 
 MONGO_HOST = "mongo"
 MONGO_PORT = 27017
 
 FACEBOOK_APP_ID = os.getenv("FACEBOOK_APP_ID")
 FACEBOOK_APP_SECRET = os.getenv("FACEBOOK_APP_SECRET")
+
+GOOGLE_CLIENT_ID = "417737641975-r9tng0l8mf7003h9vku0vqpq4eb6gfi4.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET = "KvtKktjaX60fBRWNaIwJSynM"
+GOOGLE_SCOPE = "https://www.googleapis.com/auth/fitness.activity.read"

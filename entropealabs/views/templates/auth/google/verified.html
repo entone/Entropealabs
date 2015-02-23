@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Google Account{% endblock %}
+{% block content %}
+    {% if current_user.client.social.google.token %}
+    <div id="results">
+        <div class="jumbotron">
+            <h1>Account Connected!</h1>
+            <p>Click <a href="{{url_for('dashboard.index')}}" class="btn btn-primary">here</a> to go to the dashboard, your data should be available momentarily.</p>
+        </div>
+    </div>
+    {% else %}
+    <div id="results">
+        <div class="jumbotron">
+            <h1>Oops! looks like there was an error.</h1>
+            <p>Click <a class='btn btn-primary' href="{{url_for('.index')}}">here to try again</a></p>
+        </div>
+    </div>
+    {% endif %}
+{% endblock %}

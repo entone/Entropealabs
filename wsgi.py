@@ -1,14 +1,17 @@
 from werkzeug.wsgi import peek_path_info
-from flaskaws import config
-from flaskaws.app import App
+from entropealabs import config
+from gevent import monkey
 import logging
+
+monkey.patch_all()
 
 def create_app():
     logging.basicConfig(level=config.LOG_LEVEL)
     logging.info("Initializing")
-    _app = App()
-    _app.configure_dbs()
     def app(env, start_response):
+        from entropealabs import config
+        from entropealabs.app import App
+        _app = App()
         if peek_path_info(env) == "healthcheck":
             _app.config['SERVER_NAME'] = None
         else:

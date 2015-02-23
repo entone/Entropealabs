@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}{{type}} Account Registration{% endblock %}
+{% block content %}
+<form action="{{url_for('.configure')}}" class="form-signin" method="POST">
+    <h2 class="form-signin-heading">{{type}} Account Registration</h2>
+    {% for f in fields %}
+        <label for="{{f[0]}}" class="sr-only">{{f[1]}}</label>
+        <input type="text" id="{{f[0]}}" name="{{f[0]}}" class="form-control" placeholder="{{f[1]}}" required autofocus>
+    {% endfor %}
+    <button class="btn btn-lg btn-primary btn-block" type="submit">Register {{type}} Account</button>
+</form>
+{% endblock %}

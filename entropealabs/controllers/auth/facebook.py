@@ -1,8 +1,8 @@
 from flask import Blueprint, render_template, request, redirect, url_for, Response
 from flask.views import MethodView
 from flask.ext.login import login_required, current_user
-from flaskaws import config
-from flaskaws.models.client import SocialAccount, FacebookPage, PageCategory
+from entropealabs import config
+from entropealabs.models.client import Client, SocialAccount, FacebookPage, PageCategory
 from flask_oauth import OAuth
 import logging
 from urlparse import parse_qs, urlparse
@@ -23,15 +23,15 @@ fb_app = oauth.remote_app(
     request_token_url=None,
     access_token_url='/oauth/access_token',
     authorize_url='https://www.facebook.com/dialog/oauth',
-    consumer_key=config.FACEBOOK_APP_ID,
-    consumer_secret=config.FACEBOOK_APP_SECRET,
+    consumer_key="841699302554888",
+    consumer_secret="415f6cd36c605c47486dedcf27dbe23a",
     request_token_params={'scope': 'manage_pages,read_insights,ads_management'}
 )
 
 @fb_app.tokengetter
 def get_facebook_token(token=None):
-    sa = current_user.social_account(SocialAccount.FACEBOOK)
-    return (sa.token, config.FACEBOOK_APP_SECRET)
+    sa = current_user.social.facebook
+    return (sa.token, sa.secret)
 
 @facebook.route("/login", methods=['GET', 'POST'])
 @login_required
@@ -50,11 +50,8 @@ def authorized(resp):
         return redirect(url_for(".index"))
 
     try:
-        append = True
-        sa = current_user.social_account(account_type=SocialAccount.FACEBOOK)
-        if sa.token: append = False
+        sa = current_user.social.facebook
         sa.token = resp.get('access_token')
-        if append: current_user.social_accounts.append(sa)
         current_user.save()
     except Exception as e:
         logging.exception(e)
@@ -77,13 +74,15 @@ def get_pages(user_id):
     return pages
 
 def get_long_token(token):
+    fb = current_user.social.facebook
+    logging.info(fb._json())
     long_token = fb_app.get(
         "/oauth/access_token",
         data={
             'grant_type':'fb_exchange_token',
             'fb_exchange_token':token,
-            'client_id':config.FACEBOOK_APP_ID,
-            'client_secret':config.FACEBOOK_APP_SECRET,
+            'client_id':fb.app_id,
+            'client_secret':fb.secret,
         }
     )
     token = parse_qs(long_token.data, keep_blank_values=True)
@@ -93,7 +92,29 @@ class Index(MethodView):
     decorators = [ login_required, ]
 
     def get(self):
-        return render_template("auth/facebook/index.html")
+        fb = current_user.social.facebook
+        if fb.app_id and not fb.token:
+            return redirect(url_for('.login'))
+        elif not fb.app_id:
+            fields = [
+                ["app_id","ID"],
+                ["secret", "Secret"],
+            ]
+            return render_template("auth/social_account.html", type="Facebook", fields=fields)
+        elif current_user.facebook_pages:
+            return render_template("auth/facebook/view_pages.html")
+
+class Configure(MethodView):
+    decorators = [ login_required, ]
+    def post(self):
+        logging.info(request.form)
+        current_user.social.facebook(data={
+            "app_id":request.form.get("app_id"),
+            "secret":request.form.get("secret"),
+        })
+        current_user.save()
+        return redirect(url_for('.index'))
+
 
 class Verify(MethodView):
     decorators = [ login_required, ]
@@ -103,7 +124,7 @@ class Verify(MethodView):
 class LoadPages(MethodView):
     decorators = [ login_required, ]
     def get(self):
-        sa = current_user.social_account(SocialAccount.FACEBOOK)
+        sa = current_user.social.facebook
         res = fb_app.get(
             "/debug_token",
             data={
@@ -147,11 +168,18 @@ class SavePage(MethodView):
     def post(self):
         id = request.form["id"]
         logging.info(id);
-        cfp = current_user.client.facebook_page
         for p in current_user.facebook_pages:
             if p.id == id:
-                res = current_user.client.update({"$set":{"facebook_page":p._json()}})
-                logging.info(res)
+                client = Client(id=current_user.client._id)
+                fb = client.social.facebook
+                fb.id = p.id
+                fb.app_id = current_user.social.facebook.app_id
+                fb.name=p.name
+                fb.token = p.token
+                fb.secret = current_user.social.facebook.secret
+                fb.permissions = p.permissions
+                fb.categories = p.categories
+                client.save()
                 break
 
         return Response(json.dumps({'id':id}), mimetype='application/json')
@@ -160,3 +188,4 @@ facebook.add_url_rule("/", view_func=Index.as_view('index'))
 facebook.add_url_rule("/verify", view_func=Verify.as_view('verify'))
 facebook.add_url_rule("/loadpages", view_func=LoadPages.as_view('load_pages'))
 facebook.add_url_rule("/save_page", view_func=SavePage.as_view('save_page'))
+facebook.add_url_rule("/configure", view_func=Configure.as_view('configure'))

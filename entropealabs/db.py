@@ -1,9 +1,9 @@
 from pymongo import MongoClient
 from elasticsearch import Elasticsearch
 from elasticsearch import TransportError
-from flaskaws import config
-from flaskaws import user_mapping
-from flaskaws import influx
+from entropealabs import config
+from entropealabs import user_mapping
+from entropealabs import influx
 import influxdb
 import gevent
 import logging

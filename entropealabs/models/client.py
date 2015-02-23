@@ -1,10 +1,33 @@
 import humongolus as orm
 import humongolus.field as field
-from flaskaws.util import password
+from entropealabs.util import password
+import logging
 
 class PageCategory(orm.EmbeddedDocument):
     id = field.Char()
     name = field.Char()
+
+class SocialAccount(orm.EmbeddedDocument):
+    TWITTER = 'twitter'
+    FACEBOOK = 'facebook'
+    GOOGLE = 'google'
+    LINKEDIN = 'linkedin'
+
+    type = field.Char()
+    id = field.Char()
+    name = field.Char()
+    app_id = field.Char()
+    token = orm.Field()
+    secret = field.Char()
+    avatar = field.Char()
+    permissions = orm.List(type=unicode)
+    categories = orm.List(type=PageCategory)
+    last_sync = field.Date()
+
+    def __call__(self, *args, **kwargs):
+        data = kwargs.pop('data', {})
+        self._map(data)
+        return self
 
 class FacebookPage(orm.EmbeddedDocument):
     name = field.Char()
@@ -13,23 +36,18 @@ class FacebookPage(orm.EmbeddedDocument):
     permissions = orm.List(type=unicode)
     categories = orm.List(type=PageCategory)
 
-class SocialAccount(orm.EmbeddedDocument):
-    TWITTER = 'twitter'
-    FACEBOOK = 'fb'
-    GOOGLE = 'google'
-    LINKEDIN = 'linkedin'
+class SocialAccounts(orm.List):
 
-    type = field.Char()
-    username = field.Char()
-    id = field.Char()
-    token = field.Char()
-    secret = field.Char()
-    avatar = field.Char()
-    app_id = field.Char()
-    permissions = orm.List(type=unicode)
+    def __getattr__(self, account_type):
+        for a in self:
+            if a.type == account_type: return a
+        a = SocialAccount()
+        a.type = account_type
+        self.append(a)
+        return a
 
 class Client(orm.Document):
-    _db = "flaskaws"
+    _db = "entropealabs"
     _collection = "clients"
 
     _indexes = [
@@ -38,10 +56,12 @@ class Client(orm.Document):
 
     name = field.Char()
     description = field.Char()
-    facebook_page = FacebookPage()
+    social = SocialAccounts(type=SocialAccount)
+
+
 
 class Admin(orm.Document):
-    _db = "flaskaws"
+    _db = "entropealabs"
     _collection = "client_admins"
     _indexes = [
         orm.Index('email', key=('email', 1), unique=True),
@@ -52,7 +72,7 @@ class Admin(orm.Document):
     password = field.Char()
     last_login = field.Date()
     client = field.DocumentId(type=Client)
-    social_accounts = orm.List(type=SocialAccount)
+    social = SocialAccounts(type=SocialAccount)
     facebook_pages = orm.List(type=FacebookPage)
 
     def social_account(self, account_type=None):

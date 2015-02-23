@@ -58,3 +58,7 @@ terraform/terraform.tfvars
 terraform/devops.pem
 terraform/.ssh
 terraform/.terraform
+
+*.p12
+*.pem
+google.json

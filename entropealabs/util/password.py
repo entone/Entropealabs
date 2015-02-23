@@ -1,5 +1,5 @@
 import passlib.hash
-from flaskaws import config
+from entropealabs import config
 
 
 lib = passlib.hash.__getattr__(config.HASH_ALGO_CLS)
