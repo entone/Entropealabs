@@ -9,6 +9,13 @@
         <th>
     </thead>
     <tbody>
-        <
-
+        {% for i in current_user.client.social %}
+            <tr>
+                <td>{{i.type}}</td>
+                <td>&#10003;</td>
+                <td><a href="{{url_for('{}.index'.format(i.type))}}">Configure</a></td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
 {% endblock %}

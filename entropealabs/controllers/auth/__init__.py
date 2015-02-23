@@ -77,6 +77,12 @@ class AuthLogout(MethodView):
         logout_user()
         return redirect(url_for(".login"))
 
+class Profile(MethodView):
+
+    def get(self):
+        return render_template("auth/profile.html")
+
 auth.add_url_rule("/login", view_func=AuthLogin.as_view('login'))
 auth.add_url_rule("/logout", view_func=AuthLogout.as_view('logout'))
 auth.add_url_rule("/register", view_func=AuthRegister.as_view('register'))
+auth.add_url_rule("/profile", view_func=Profile.as_view('profile'))
